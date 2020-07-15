@@ -10,7 +10,7 @@ const writeFileAsync = promisify(fs.writeFile);
 // Sets up the Express App
 // =============================================================
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -19,10 +19,10 @@ app.use(express.static('public'))
 app.use(express.static('db'))
 
 //  Temp database
-var notes = [{
-  "title": "Test Title",
-  "text": "Test text"
-}]
+// var notes = [{
+//   "title": "Test Title",
+//   "text": "Test text"
+// }]
 
 
 // HTML page routes
@@ -39,8 +39,14 @@ app.get("/notes", function (req, res) {
 app.get('/api/notes', (req, res) => {
   fs.readFile((path.join(__dirname, "db/db.json")), 'utf8',
     function (error, data) {
+      // console.log("data:", data)
       if (error) throw error
-      res.json(JSON.parse(data))
+      if (data.length === 0){
+        console.log('data file is empty')
+      }
+      else{
+        res.json(JSON.parse(data))
+      }
     })
 })
 
@@ -61,6 +67,17 @@ app.post('/api/notes', (req, res) => {
       }
       else {
         currentNotes.push(newNote)
+        console.log("currentNotes.length", currentNotes.length)
+
+        for (let i = 0; i < currentNotes.length; i++) {
+
+          // console.log(currentNotes[i])
+          (currentNotes[i]).id = i+1
+        }
+
+        console.log(currentNotes)
+
+
         return (currentNotes)
       }
     })
@@ -73,17 +90,33 @@ app.post('/api/notes', (req, res) => {
 })
 
 app.delete('/api/notes/:id', (req, res) => {
-  let {id} = req.params 
+  console.log("API called") 
+  let id = req.params.id-1
+  console.log('id', id)
 
   readFileAsync((path.join(__dirname, "db/db.json")), 'utf8')
     .then(function (data) {
       let db = JSON.parse(data)
-      if(db !== undefined){
-        db.splice(parseInt(id), 1)
+      db.splice(parseInt(id), 1)
+      console.log("deleted item db", db)
+
+      for (let i = 0; i < db.length; i++) {
+
+        // console.log(currentNotes[i])
+        (db[i]).id = i+1
       }
+
+      console.log("renumbered", db)
       res.status(200).end();
-    })
+      
+      return writeFileAsync((path.join(__dirname, "db/db.json")), JSON.stringify(db))
+      .then(function () {
+        res.json(db)
+      })
+    })  
+    
 })
+
 
 
 // Starts the server to begin listening

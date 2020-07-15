@@ -35,7 +35,6 @@ const deleteNote = (id) => {
 // If there is an activeNote, display it, otherwise render empty inputs
 const renderActiveNote = () => {
   $saveNoteBtn.hide();
-
   if (activeNote.id) {
     $noteTitle.attr("readonly", true);
     $noteText.attr("readonly", true);
@@ -64,6 +63,7 @@ const handleNoteSave = function () {
 
 // Delete the clicked note
 const handleNoteDelete = function (event) {
+  console.log("I've been clicked: ", event)
   // prevents the click listener for the list from being called when the button inside of it is clicked
   event.stopPropagation();
 
@@ -74,7 +74,8 @@ const handleNoteDelete = function (event) {
   }
 
   deleteNote(note.id).then(() => {
-    console.log(note.id)
+    // TESTING
+    console.log("note.id", note.id)
     getAndRenderNotes();
     renderActiveNote();
   });
@@ -82,6 +83,7 @@ const handleNoteDelete = function (event) {
 
 // Sets the activeNote and displays it
 const handleNoteView = function () {
+  console.log("noteview", $(this).data())
   activeNote = $(this).data();
   renderActiveNote();
 };
@@ -151,6 +153,3 @@ $noteText.on("keyup", handleRenderSaveBtn);
 // Gets and renders the initial list of notes
 getAndRenderNotes();
 
-
-// Starts the server to begin listening
-// =============================================================
